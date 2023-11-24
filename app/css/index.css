@@ -128,7 +128,38 @@ position: relative;
 border-radius: 6px;
 }
 
+.clone_btn
+{
+  margin-top: 25px;
+  margin: auto;
+  width: 50%;
+  padding: 10px;
+}
 
+/*clone button*/
+.clone_btn button {
+  /* float: left; */
+  width: 100%;
+  padding: 10px;
+  background: #2196F3;
+  color: white;
+  font-size: 17px;
+  border: 1px solid grey;
+  border-left: none;
+  cursor: pointer;
+}
 
-  
+.clone_btn button:hover {
+  background: #0b7dda;
+}
 
+.clone_btn::after {
+  content: "";
+  clear: both;
+  display: table;
+}
+.clone_btn{
+  display: flex;
+  justify-content:center;
+  margin-bottom: 15px;
+}
