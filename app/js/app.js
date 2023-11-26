@@ -17,6 +17,9 @@ let billing_state;
 let billing_code;
 let billing_country;
 let prospect_quote_assigned;
+let account_id;
+let account_name;
+let recordObject ;
 
 //Prospects
 let prospect_id;
@@ -73,11 +76,13 @@ function search_prospect()
          const datas = data.data
          let data2 = "";
          datas.map( (data)=> {
+            console.log("Prosepect Search")
             console.log(data)
             prospect_id = data.id;
             prospect_name = data.Deal_Name
             prospect_quote_assigned = data.Quote_Assigned
-
+            account_id = data.Account_Name.id
+            account_name = data.Account_Name.name
             data2 +=`<div class="container left">
             <div class="content">
             <h3>Prospect Information</h3>
@@ -106,6 +111,8 @@ function search_prospect()
 
 function clone_quote()
 {
+   var today = new Date();
+   var lastDayOfMonth = new Date(today.getFullYear(), today.getMonth()+1, 0);
    console.log("Quote Informations")
    console.log(quote_owner_name)
    console.log(quote_owner_id)
@@ -115,18 +122,26 @@ function clone_quote()
    console.log(prospect_id)
    console.log(prospect_name)
    console.log(prospect_quote_assigned)
+   let recordArray = [];
+   recordObject = {"product": "3769920000155534022","quantity":1}
+   recordArray.push(recordObject)
+
    if(prospect_quote_assigned)
    {
-      alert("Prospect Quote assign is NOT null");
+      alert("The prospect was assigned to different quote!");
       
    }
    else
    {
       var recordData = {
-         "Company": "Zylker",
-         "Last_Name": "Peterson"
+         "Subject": subject,
+         "Account_Name": account_id,
+         "Deal_Name": prospect_id,
+         "Product_Details" : recordArray
    }
- ZOHO.CRM.API.insertRecord({Entity:"Quotes",APIData:recordData,Trigger:["workflow"]}).then(function(data){
+   ZOHO.CRM.API.insertRecord({Entity:"Quotes",APIData:recordData,Trigger:["workflow"]}).then(function(data){
+   console.log("Quote Created!")
+   alert("Successfully Created")
     console.log(data);
     });
    }
