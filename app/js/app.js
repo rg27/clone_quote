@@ -7,6 +7,7 @@ let quote_owner_id;
 let quote_owner_email;
 let subject;
 let vat_amt;
+let amt_paid;
 let crm_license_prod;
 let crm_license_desc;
 let crm_jurisdiction;
@@ -20,10 +21,12 @@ let prospect_quote_assigned;
 let account_id;
 let account_name;
 let recordObject ;
-
-//Prospects
 let prospect_id;
- 
+let contact_id;
+let terms_and_conditions;
+let valid_till;
+let new_valid_till;
+let product_lists;
 document.getElementById("clone_button_id").style.display = "none";
 // Get Entity Data from CRM (Note: this only works within Zoho CRM)
 ZOHO.embeddedApp.on("PageLoad", entity => {
@@ -42,6 +45,7 @@ ZOHO.embeddedApp.on("PageLoad", entity => {
          quote_owner_email = data.email
          subject = data.Subject
          vat_amt = data.VAT_Amount
+         amt_paid = data.Amount_Paid
          crm_license_prod = data.CRM_License_Product
          crm_license_desc = data.CRM_License_Description
          crm_jurisdiction = data.CRM_Jurisdiction
@@ -51,8 +55,39 @@ ZOHO.embeddedApp.on("PageLoad", entity => {
          billing_state = data.Billing_State
          billing_code = data.Billing_Code
          billing_country = data.Billing_Country
+         terms_and_conditions = data.Terms_and_Conditions
+         //2023-04-18
+         valid_till  = new Date("en-US", { year:"numeric", month:"2-digit", day:"2-digit"});
+         console.log("Valid Till: ")
+         get_month = new Date().getMonth();
+         get_year  = new Date().getFullYear();
+         get_day = new Date(get_year, get_month, 0).getDate();
+         new_valid_till = get_year + "-" + get_month + "-" + get_day
       });
-  });
+
+       //Get Product Details
+         product_lists = {
+            prod: []
+         };
+
+         quote_data.map( (prod_detail)=> {    
+            
+            console.log("Product Details");
+            console.log(prod_detail.Product_Details)
+            prod_detail.Product_Details.map( (item)=> {  
+               console.log(item.product.id)
+               product_lists.prod.push({ 
+                  "product" : item.product.id,
+                  "quantity"  : item.quantity,
+               });
+               console.log("Product Lists:")
+               console.log(product_lists)
+            });
+            });
+         });
+ 
+
+  //Get Current User
   ZOHO.CRM.CONFIG.getCurrentUser()
   .then(function(data){
    console.log("Current User: ")
@@ -60,8 +95,7 @@ ZOHO.embeddedApp.on("PageLoad", entity => {
    const user_data = data.data
    user_data.map( (data)=> {
       console.log(data)
-      prospect_id = data.id;
-     
+      user_id = data.id;
    });
 });
 });
@@ -82,7 +116,9 @@ function search_prospect()
             prospect_name = data.Deal_Name
             prospect_quote_assigned = data.Quote_Assigned
             account_id = data.Account_Name.id
+            account_id = data.Account_Name.id
             account_name = data.Account_Name.name
+            contact_id = data.Contact_Name.id
             data2 +=`<div class="container left">
             <div class="content">
             <h3>Prospect Information</h3>
@@ -111,39 +147,48 @@ function search_prospect()
 
 function clone_quote()
 {
-   var today = new Date();
-   var lastDayOfMonth = new Date(today.getFullYear(), today.getMonth()+1, 0);
-   console.log("Quote Informations")
-   console.log(quote_owner_name)
-   console.log(quote_owner_id)
-   console.log(quote_owner_email)
-   console.log(subject)
-   console.log("Prospect Informations")
-   console.log(prospect_id)
-   console.log(prospect_name)
-   console.log(prospect_quote_assigned)
+
+   
    let recordArray = [];
    recordObject = {"product": "3769920000155534022","quantity":1}
-   recordArray.push(recordObject)
-
+   recordArray.push(product_lists)
    if(prospect_quote_assigned)
    {
       alert("The prospect was assigned to different quote!");
-      
    }
    else
    {
-      var recordData = {
-         "Subject": subject,
-         "Account_Name": account_id,
-         "Deal_Name": prospect_id,
-         "Product_Details" : recordArray
+   var recordData = {
+      "Subject": subject,
+      "Account_Name": account_id,
+      "Deal_Name": prospect_id,
+      "Owner": user_id,
+      "Contact_Name": contact_id,
+      "Quote_Stage": "Draft",
+      "VAT_Amount": vat_amt,
+      "Amount_Paid": amt_paid,
+      "CRM_License_Product": crm_license_prod,
+      "CRM_License_Description": crm_license_desc,
+      "CRM_Jurisdiction": crm_jurisdiction,
+      "Description": description_info,
+      "Billing_Street": billing_street,
+      "Billing_City": billing_city,
+      "Billing_State": billing_state,
+      "Billing_Code": billing_code,
+      "Billing_Country": billing_country,
+      "Terms_and_Conditions": terms_and_conditions,
+      "Valid_Till": new_valid_till,
+      "Product_Details" : product_lists.prod
    }
-   ZOHO.CRM.API.insertRecord({Entity:"Quotes",APIData:recordData,Trigger:["workflow"]}).then(function(data){
-   console.log("Quote Created!")
-   alert("Successfully Created")
-    console.log(data);
+   ZOHO.CRM.API.insertRecord({Entity:"Quotes",APIData:recordData,Trigger:["workflow"]})
+   .then(function(data){
+   const datas = data.data
+   datas.map( (data)=> {
+   let quote_id = data.details.id;
+   let quote_url = "https://crm.zoho.com/crm/org682300086/tab/Quotes/" + quote_id;
+    window.open(quote_url, '_blank').focus();
     });
+   })
    }
 }
 
