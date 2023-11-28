@@ -27,6 +27,11 @@ let terms_and_conditions;
 let valid_till;
 let new_valid_till;
 let product_lists;
+let services_covered = [];
+let prospect_stage;
+let clearance_for_db_c;
+let clearance_for_processing;
+let quote_id;
 
 document.getElementById("clone_button_id").style.display = "none";
 document.getElementById("close_button_id").style.display = "none";
@@ -38,7 +43,7 @@ ZOHO.embeddedApp.on("PageLoad", entity => {
     ZOHO.CRM.API.getRecord({
     Entity: "Quotes", approved: "both", RecordID:entity_id
     })
-    .then(function(data){
+   .then(function(data){
       const quote_data = data.data
       console.log(quote_data)
       quote_data.map( (data)=> {
@@ -58,10 +63,13 @@ ZOHO.embeddedApp.on("PageLoad", entity => {
          billing_code = data.Billing_Code
          billing_country = data.Billing_Country
          terms_and_conditions = data.Terms_and_Conditions
+         services_covered = data.Services_Covered;
          //2023-04-18
          valid_till  = new Date("en-US", { year:"numeric", month:"2-digit", day:"2-digit"});
          console.log("Valid Till: ")
-         get_month = new Date().getMonth();
+         get_month = new Date().getMonth() + 1;
+         console.log("Month");
+         console.log(get_month)
          get_year  = new Date().getFullYear();
          get_day = new Date(get_year, get_month, 0).getDate();
          new_valid_till = get_year + "-" + get_month + "-" + get_day
@@ -84,7 +92,7 @@ ZOHO.embeddedApp.on("PageLoad", entity => {
                console.log(product_lists)
             });
             });
-         });
+      });
 
   //Get Current User
   ZOHO.CRM.CONFIG.getCurrentUser()
@@ -118,6 +126,9 @@ function search_prospect()
             account_id = data.Account_Name.id
             account_name = data.Account_Name.name
             contact_id = data.Contact_Name.id
+            clearance_for_db_c = data.Clearance_for_Dashboard_Commission
+            clearance_for_processing = data.Clearance_for_Processing
+            prospect_stage = data.Stage
             data2 +=`<div class="container left">
             <div class="content">
             <h3>Prospect Information</h3>
@@ -149,12 +160,34 @@ function clone_quote()
    let recordArray = [];
    recordObject = {"product": "3769920000155534022","quantity":1}
    recordArray.push(product_lists)
-   if(prospect_quote_assigned)
+   if(prospect_stage === "Closed Won" || clearance_for_db_c === true || clearance_for_processing === true)
    {
       alert("The Prospect you entered is associated to different quote!");
    }
    else
    {
+
+   //Update the Quote Assigned
+   if(prospect_quote_assigned)
+   {
+      let update_prospect={
+         Entity:"Deals",
+         APIData:{
+               "id": prospect_id,
+               "Quote_Assigned": ""
+         },
+         Trigger:["workflow"]
+       }
+       ZOHO.CRM.API.updateRecord(update_prospect)
+       .then(function(data){
+           console.log(data)
+           console.log("Quote Assigned: ")
+           console.log(quote_id)
+           console.log("Prospect ID")
+           console.log(prospect_id)
+      })
+   }
+
    var recordData = {
       "Subject": subject,
       "Account_Name": account_id,
@@ -175,6 +208,8 @@ function clone_quote()
       "Billing_Country": billing_country,
       "Terms_and_Conditions": terms_and_conditions,
       "Valid_Till": new_valid_till,
+      "Services_Covered": services_covered,
+      "Quote_Linked_to_Prospect": true,
       "Product_Details" : product_lists.prod
    }
    ZOHO.CRM.API.insertRecord({Entity:"Quotes",APIData:recordData,Trigger:["workflow"]})
@@ -182,7 +217,7 @@ function clone_quote()
    const datas = data.data
    let data4 = "";
    datas.map( (data)=> {
-   let quote_id = data.details.id;
+   quote_id = data.details.id;
    let quote_url = "https://crm.zoho.com/crm/org682300086/tab/Quotes/" + quote_id;
    window.open(quote_url, '_blank').focus();
     data4 +=`<div class="container left">
@@ -194,8 +229,7 @@ function clone_quote()
     document.getElementById("timeline").innerHTML = data4
     document.getElementById("close_button_id").style.display = "block";
     document.getElementById("clone_button_id").style.display = "none";
-    
-   })
+   });
    }
 }
 
