@@ -162,7 +162,7 @@ function clone_quote()
    recordArray.push(product_lists)
    if(prospect_stage === "Closed Won" || clearance_for_db_c === true || clearance_for_processing === true)
    {
-      alert("The Prospect you entered is associated to different quote!");
+      alert("The Prospect is already Closed-Won! Process is unsuccessful!");
    }
    else
    {
