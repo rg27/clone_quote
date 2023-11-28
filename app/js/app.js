@@ -27,7 +27,9 @@ let terms_and_conditions;
 let valid_till;
 let new_valid_till;
 let product_lists;
+
 document.getElementById("clone_button_id").style.display = "none";
+document.getElementById("close_button_id").style.display = "none";
 // Get Entity Data from CRM (Note: this only works within Zoho CRM)
 ZOHO.embeddedApp.on("PageLoad", entity => {
     // This is the information about the current record, if applicable.
@@ -69,9 +71,7 @@ ZOHO.embeddedApp.on("PageLoad", entity => {
          product_lists = {
             prod: []
          };
-
          quote_data.map( (prod_detail)=> {    
-            
             console.log("Product Details");
             console.log(prod_detail.Product_Details)
             prod_detail.Product_Details.map( (item)=> {  
@@ -85,7 +85,6 @@ ZOHO.embeddedApp.on("PageLoad", entity => {
             });
             });
          });
- 
 
   //Get Current User
   ZOHO.CRM.CONFIG.getCurrentUser()
@@ -133,8 +132,6 @@ function search_prospect()
         
      }).catch(err=>{
         let data3 = "";
-        console.log("error");
-        console.log("error 2");
         data3 +=`<div class="container left">
         <div class="content">
         <h3>Error, no prospect found!</h3>
@@ -142,19 +139,19 @@ function search_prospect()
         </div>`
         document.getElementById("timeline").innerHTML = data3
         document.getElementById("clone_button_id").style.display = "none";
+        document.getElementById("close_button_id").style.display = "none";
+        
      })
 }
 
 function clone_quote()
 {
-
-   
    let recordArray = [];
    recordObject = {"product": "3769920000155534022","quantity":1}
    recordArray.push(product_lists)
    if(prospect_quote_assigned)
    {
-      alert("The prospect was assigned to different quote!");
+      alert("The Prospect you entered is associated to different quote!");
    }
    else
    {
@@ -183,12 +180,29 @@ function clone_quote()
    ZOHO.CRM.API.insertRecord({Entity:"Quotes",APIData:recordData,Trigger:["workflow"]})
    .then(function(data){
    const datas = data.data
+   let data4 = "";
    datas.map( (data)=> {
    let quote_id = data.details.id;
    let quote_url = "https://crm.zoho.com/crm/org682300086/tab/Quotes/" + quote_id;
-    window.open(quote_url, '_blank').focus();
+   window.open(quote_url, '_blank').focus();
+    data4 +=`<div class="container left">
+    <div class="content">
+    <h3>You have successfully clone this quote!</h3>
+    </div>
+    </div>`
     });
+    document.getElementById("timeline").innerHTML = data4
+    document.getElementById("close_button_id").style.display = "block";
+    document.getElementById("clone_button_id").style.display = "none";
+    
    })
    }
 }
 
+function close_quote()
+{
+   ZOHO.CRM.UI.Popup.close()
+   .then(function(data){
+      console.log(data)
+   })
+}
