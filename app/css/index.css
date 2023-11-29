@@ -10,18 +10,17 @@
   
 
 /* Container around content */
-  .nav_container {
-    margin: auto;
-    width: 50%;
-    padding: 10px;
-  }
-  
+.nav_container {
+  margin: auto;
+  width: 50%;
+  padding: 10px;
+  margin-top: 65px;
+}
 
 h1{
     text-align: center;
     color: white;  
 }
-
 
 /*Search*/
 .search_button input[type=text] {
@@ -45,8 +44,6 @@ h1{
   }
 
   /*Contact Name */
-
-  /*Account Name*/
 .contact_name_input input[type=text] {
     padding: 10px;
     font-size: 17px;
@@ -66,7 +63,6 @@ h1{
   border: 1px solid grey;
   border-left: none;
   cursor: pointer;
-  
 }
 
 .search_button button:hover {
@@ -203,3 +199,4 @@ border-radius: 6px;
   justify-content:center;
   margin-bottom: 15px;
 }
+

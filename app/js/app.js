@@ -162,7 +162,15 @@ function clone_quote()
    recordArray.push(product_lists)
    if(prospect_stage === "Closed Won" || clearance_for_db_c === true || clearance_for_processing === true)
    {
-      alert("The Prospect is already Closed-Won! Process is unsuccessful!");
+      let alert_message = "";
+      alert_message +=`<div class="container left">
+      <div class="content">
+      <h3 style="color: red;">The Prospect is already Closed-Won! Process is unsuccessful!</h3>
+      </div>
+      </div>`  
+      document.getElementById("timeline").innerHTML = alert_message 
+      document.getElementById("clone_button_id").style.display = "none";
+      document.getElementById("close_button_id").style.display = "none";
    }
    else
    {
@@ -222,7 +230,7 @@ function clone_quote()
    window.open(quote_url, '_blank').focus();
     data4 +=`<div class="container left">
     <div class="content">
-    <h3>You have successfully clone this quote!</h3>
+    <h3>You successfully clone the quote!</h3>
     </div>
     </div>`
     });
